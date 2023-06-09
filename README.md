@@ -7,7 +7,7 @@ This project will focus on the redistricting happening now in El Paso County, CO
 ## Background
 The county is required to redistrict this year based on the 2020 census.
 The image below shows information for the 5 current districts. This information is based on the 2020 Census and voter registration data in El Paso County, and is curtasy of the Dave's Redistricting website (https://davesredistricting.org).
-Note that per curreent districting requirements, 3 of the 5 districts have too much population relative to the other districts.
+Note that per current districting requirements, 3 of the 5 districts have too much population relative to the other districts.
 
 ![2017 Districts](CurrentDistricts.png)
 
