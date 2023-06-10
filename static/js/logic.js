@@ -57,43 +57,26 @@ function districtMap (mapData) {
 }
 
 function updatePanelData (mapName) {
+  console.log('In updatePanelData ', mapName);
   // prepare the data to put in the panel
   let data = ['population: XXX,XXX', 'Dems 42.3%', 'Reps: 52.3%'];
 
-  var panel;
+  // update the district map panel
+  d3.select('#district').text('Map Displayed: ' + mapName);
 
-  // choose the panel based on the map selected
-  switch (mapName) {
-    case 'Current':
-      panel = d3.select('#current-data');
-      break;
-    case 'Proposal 1':
-      panel = d3.select('#alpha-data');
-      break;
-    case 'Proposal 2':
-      panel = d3.select('#bravo-data');
-      break;
-    default:
-      panel = d3.select('#current-data');
+  // get the district data for the selected district map and display each district
+  for (let district = 1; district < 6; district++) {
+    let panelID = '#d' + district.toString();
+    let panel = d3.select(panelID);
+
+    // remove any existing data in the panel
+    panel.selectAll('p').remove();
+    // put the data in the panel
+    let paragraphs = panel.selectAll('p').data(data).enter().append('p');
+    paragraphs.text(function (d) {
+      return d;
+    });
   }
-
-  // remove any existing data in the panel
-  panel.selectAll('p').remove();
-  // put the data in the panel
-  let paragraphs = panel.selectAll('p').data(data).enter().append('p');
-  paragraphs.text(function (d) {
-    return d;
-  });
-}
-
-// optionChanged is called when a district map is selected from the drop down menu
-// The dropdown menu values are the names of the maps
-function optionChanged (value) {
-  console.log('New map is: ', value);
-  updatePanelData(value);
-  // set the active map layer
-  myMap.fire('baselayerchange', {layer: baseMaps[value],
-    name: value});
 }
 
 // called then a new base layer (aka district map) is chosen on the map
@@ -109,16 +92,6 @@ function onDistrictSelect (e) {
 // ****************************/
 // Main code body
 // ****************************/
-
-// initialize the dropdown menu, and set the current districts as the default map
-let dropDown = d3.select('#selDataset');
-let options = dropDown.selectAll('option').data(mapNames).enter().append('option');
-options.text(function (d) {
-  return d;
-}).attr('value', function (d) {
-  return d;
-});
-updatePanelData(0);
 
 // Add the precinct boundary GeoJSON layer to the base map
 fetch('../../static/data/2020-precincts.geojson')
@@ -164,8 +137,11 @@ fetch('../../static/data/2020-precincts.geojson')
 
                 // Next, create a control for our layers and add our district maps to it
                 L.control.layers(baseMaps, null).addTo(myMap);
+
                  // set the active base layer to the current districts
                 baseMaps[mapNames[0]].addTo(myMap);
+                console.log('About to call');
+                updatePanelData['Current'];
                 console.log('Set the active layer to ', mapNames[0], baseMaps[mapNames[0]]);
 
                 // set the function to call when the base layer is changed
