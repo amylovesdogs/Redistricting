@@ -1,3 +1,4 @@
+
 // Creating the map object
 var myMap = L.map('map', {
   center: [38.837912, -104.553735],
@@ -51,32 +52,60 @@ function districtMap (mapData) {
         }
       });
       // Giving each feature a popup with information that's relevant to it
-      layer.bindPopup('<h1>County Commission District ' + feature.properties.id + '</h1> <hr> <h2>Population: ' + feature.properties.TotalPop + '</h2>');
+      layer.bindPopup('<h2>County Commission District ' + feature.properties.id + '</h2> <hr> <h3>Population: ' + feature.properties.TotalPop + '</h3>');
     }
   });
 }
 
 function updatePanelData (mapName) {
   console.log('In updatePanelData ', mapName);
-  // prepare the data to put in the panel
-  let data = ['population: XXX,XXX', 'Dems 42.3%', 'Reps: 52.3%'];
 
-  // update the district map panel
-  d3.select('#district').text('Map Displayed: ' + mapName);
-
-  // get the district data for the selected district map and display each district
-  for (let district = 1; district < 6; district++) {
-    let panelID = '#d' + district.toString();
-    let panel = d3.select(panelID);
-
-    // remove any existing data in the panel
-    panel.selectAll('p').remove();
-    // put the data in the panel
-    let paragraphs = panel.selectAll('p').data(data).enter().append('p');
-    paragraphs.text(function (d) {
-      return d;
-    });
+  // fetch the data to put in the panel
+  // set the flask route
+  var myRoute = ccInfoRoute;
+  switch (mapName) {
+    case 'Current':
+      myRoute = ccInfoRoute;
+      break;
+    case 'Proposal 1':
+      myRoute = alphaInfoRoute;
+      break;
+    case 'Proposal 2':
+      myRoute = bravoInfoRoute;
   }
+  d3.json(flaskAppURL + myRoute).then(function (jsonData) {
+    // set the district json to a variable
+    let districtInfo = jsonData;
+    console.log('Got the district info ', districtInfo);
+
+    // update the district map panel
+    d3.select('#district').text('Map Displayed: ' + mapName);
+
+    // get the district data for the selected district map and display each district
+
+    for (let i = 0; i < districtInfo.length; i++) {
+      console.log('per district', districtInfo[i]);
+      let district = districtInfo[i];
+      let data = [];
+      let panelID = '#d' + (i + 1).toString();
+      let panel = d3.select(panelID);
+
+      for (const key in district) {
+        if (key != 'name') {
+          data.push(`${key}: ${district[key]}`);
+        }
+      }
+      console.log('data is ', data);
+
+      // remove any existing data in the panel
+      panel.selectAll('p').remove();
+      // put the data in the panel
+      let paragraphs = panel.selectAll('p').data(data).enter().append('p');
+      paragraphs.text(function (d) {
+        return d;
+      });
+    }
+  });
 }
 
 // called then a new base layer (aka district map) is chosen on the map
@@ -94,59 +123,65 @@ function onDistrictSelect (e) {
 // ****************************/
 
 // Add the precinct boundary GeoJSON layer to the base map
-fetch('../../static/data/2020-precincts.geojson')
-  .then((response) => response.json())
-  .then(function (jsonData) {
-      // set the precint json to a variable
-    let precinctData = jsonData;
-    console.log('Got the precinct info ', precinctData);
+const flaskAppURL = 'http://127.0.0.1:5000/api/v1.0';
+const precinctRoute = '/district-lines/precincts';
+const ccRoute = '/district-lines/cc';
+const alphaRoute = '/district-lines/alpha';
+const bravoRoute = '/district-lines/bravo';
+const ccInfoRoute = '/district-info/cc';
+const alphaInfoRoute = '/district-info/alpha';
+const bravoInfoRoute = '/district-info/bravo';
 
-    L.geoJson(precinctData, {
-      // Styling each precinct
-      style: function (feature) {
-        return {
-          color: 'black',
-          fillOpacity: 0,
-          weight: 1
-        };
-      },
-      // add a popup to each precinct
-      onEachFeature: function (feature, layer) {
-        // Giving each feature a popup with information that's relevant to it
-        layer.bindPopup('<p>Precinct ' + feature.properties.PRECINCT + '</p>');
-      }
-    }).addTo(myMap);
+// get the precinct line geojson and add it to the map
+d3.json(flaskAppURL + precinctRoute).then(function (jsonData) {
+  // set the precint json to a variable
+  let precinctData = jsonData;
+  console.log('Got the precinct info ', precinctData);
 
-    // first, get and add the existing district map
-    fetch('../../static/data/2017-cc-districts.geojson')
-      .then((response) => response.json())
-      .then(function (jsonData) {
-        baseMaps[mapNames[0]] = districtMap(jsonData);
+  L.geoJson(precinctData, {
+    // Styling each precinct
+    style: function (feature) {
+      return {
+        color: 'black',
+        fillOpacity: 0,
+        weight: 1
+      };
+    },
+    // add a popup to each precinct
+    onEachFeature: function (feature, layer) {
+      // Giving each feature a popup with information that's relevant to it
+      layer.bindPopup('<p>Precinct ' + feature.properties.PRECINCT + '</p>');
+    }
+  }).addTo(myMap);
 
-        // second, get and add proposal 1 district map (alpha)
-        fetch('../../static/data/alpha-cc-districts.geojson')
-          .then((response) => response.json())
-          .then(function (jsonData) {
-            baseMaps[mapNames[1]] = districtMap(jsonData);
+  // add the 3 county commission districts maps to the existing map
+  // these 3 district maps are mutually exclusive and as such are
+  // added as base maps to be selected from
 
-            // third, get and add proposal 2 district map (bravo)
-            fetch('../../static/data/bravo-cc-districts.geojson')
-              .then((response) => response.json())
-              .then(function (jsonData) {
-                baseMaps[mapNames[2]] = districtMap(jsonData);
+  // first, get and add the existing county commissioner district map
+  d3.json(flaskAppURL + ccRoute).then(function (jsonData) {
+    baseMaps[mapNames[0]] = districtMap(jsonData);
 
-                // Next, create a control for our layers and add our district maps to it
-                L.control.layers(baseMaps, null).addTo(myMap);
+    // second, get and add proposal 1 county commissioner district map (alpha)
+    d3.json(flaskAppURL + alphaRoute).then(function (jsonData) {
+      baseMaps[mapNames[1]] = districtMap(jsonData);
 
-                 // set the active base layer to the current districts
-                baseMaps[mapNames[0]].addTo(myMap);
-                console.log('About to call');
-                updatePanelData['Current'];
-                console.log('Set the active layer to ', mapNames[0], baseMaps[mapNames[0]]);
+      // third, get and add proposal 2 county commissioner map (bravo)
+      d3.json(flaskAppURL + bravoRoute).then(function (jsonData) {
+        baseMaps[mapNames[2]] = districtMap(jsonData);
 
-                // set the function to call when the base layer is changed
-                myMap.on('baselayerchange', onDistrictSelect);
-              });
-          });
+        // Next, create a control for our layers and add our district maps to it
+        L.control.layers(baseMaps, null).addTo(myMap);
+
+        // set the active base layer to the current district map
+        baseMaps[mapNames[0]].addTo(myMap);
+        console.log('About to call');
+        updatePanelData['Current'];
+        console.log('Set the active layer to ', mapNames[0], baseMaps[mapNames[0]]);
+
+        // set the function to call when the base layer is changed
+        myMap.on('baselayerchange', onDistrictSelect);
       });
+    });
   });
+});
