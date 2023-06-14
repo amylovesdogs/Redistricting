@@ -34,16 +34,34 @@
           <h1>County Commissioner Redistricting</h1>
           <h2>El Paso County, Colorado</h2>
           <p>Choose a district map to explore by using the map layer control.</p><br>
-          <h3 id="district">Map Displayed: Current</h3>
         </div>
       </div>
       <div class="row">
+        <div class="col-lg-4">
+          <div class="well">
+            <h5>What type of data would you like to see?</h5>
+            <select id="selDataset" onchange="optionChanged(this.value)"></select>
+          </div>
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">Current View</h3>
+            </div>
+            <div id="current-view" class="panel-body"></div>
+          </div>
+        </div>
         <div class="col-lg-4">
           <div class="panel panel-primary">
             <div class="panel-heading">
               <h3 class="panel-title">District 1</h3>
             </div>
-            <div id="d1" class="panel-body"></div>
+            <div id="d1" class="panel-body">
+              <div>
+                <div id="d1Text"></div>
+              </div>
+              <div>
+                <canvas id="d1Chart"></canvas>
+              </div>
+            </div>
           </div>
         </div>
         <div class="col-lg-4">
@@ -51,15 +69,14 @@
             <div class="panel-heading">
               <h3 class="panel-title">District 2</h3>
             </div>
-            <div id="d2" class="panel-body"></div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="panel panel-primary">
-            <div class="panel-heading">
-              <h3 class="panel-title">District 3</h3>
+            <div id="d2" class="panel-body">
+              <div>
+                <div id="d2Text"></div>
+              </div>
+              <div>
+                <canvas id="d2Chart"></canvas>
+              </div>
             </div>
-            <div id="d3" class="panel-body"></div>
           </div>
         </div>
       </div>
@@ -67,9 +84,31 @@
         <div class="col-lg-4">
           <div class="panel panel-primary">
             <div class="panel-heading">
+              <h3 class="panel-title">District 3</h3>
+            </div>
+            <div id="d3" class="panel-body">
+              <div>
+                <div id="d3Text"></div>
+              </div>
+              <div>
+                <canvas id="d3Chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
               <h3 class="panel-title">District 4</h3>
             </div>
-            <div id="d4" class="panel-body"></div>
+            <div id="d4" class="panel-body">
+              <div>
+                <div id="d4Text"></div>
+              </div>
+              <div>
+                <canvas id="d4Chart"></canvas>
+              </div>
+            </div>
           </div>
         </div>
         <div class="col-lg-4">
@@ -77,7 +116,14 @@
             <div class="panel-heading">
               <h3 class="panel-title">District 5</h3>
             </div>
-            <div id="d5" class="panel-body"></div>
+            <div id="d5" class="panel-body">
+              <div>
+                <div id="d5Text"></div>
+              </div>
+              <div>
+                <canvas id="d5Chart"></canvas>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -87,6 +133,9 @@
       </div>
     </div>
 
+    <!-- chart.js library -->
+    <!--script src="https://cdnjs.com/libraries/Chart.js"></script -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
     <script type="text/javascript" src="static/js/logic.js"></script>
 
   </body>

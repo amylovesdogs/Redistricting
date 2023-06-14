@@ -6,7 +6,7 @@ import pandas as pd
 import sqlite3
 
 # flask app
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from flask_cors import CORS, cross_origin
 
 # json
@@ -17,7 +17,7 @@ import json
 #################################################
 # connect to the sqlite3 database and read in all the tables
 # as dataframes
-conn = sqlite3.connect('../database/redistricting_data.db')
+conn = sqlite3.connect('database/redistricting_data.db')
 pvi_df = pd.read_sql_query('SELECT * FROM pvi', conn)
 generic2022_df = pd.read_sql_query('SELECT * FROM generic2022', conn)
 current_map_df = pd.read_sql_query('SELECT * FROM currentmap', conn)
@@ -57,19 +57,19 @@ bravo_map_info = bravo_map_df.to_json(orient ='records')
 # Read in district borders as geojson files
 #################################################
 # precincts
-with open('../static/data/2020-precincts.geojson') as f:
+with open('static/data/2020-precincts.geojson') as f:
    precincts = json.load(f)
 
 # current county commission districts
-with open('../static/data/2017-CC-districts.geojson') as f:
+with open('static/data/2017-CC-districts.geojson') as f:
    cc_districts = json.load(f)
 
 # proposal 1, new county commission districts
-with open('../static/data/alpha-CC-districts.geojson') as f:
+with open('static/data/alpha-CC-districts.geojson') as f:
    alpha = json.load(f)
 
 # proposal 2, new county commission districts
-with open('../static/data/bravo-CC-districts.geojson') as f:
+with open('static/data/bravo-CC-districts.geojson') as f:
    bravo = json.load(f)
 
 #################################################
@@ -83,34 +83,31 @@ CORS(app)
 #################################################
 
 # Home Page, documents the routes
-@app.route("/")
-def welcome():
-    return (
-        f"Welcome to to the El Paso County, CO district data API!<br/>"
-        f"Available Routes:<br/>"
-        f"<b>/api/v1.0/district-lines/precincts</b>      Returns geojson data for the El Paso County, CO precinct lines<br/>"
-        f"<b>/api/v1.0/district-lines/cc</b>             Returns geojson data for the El Paso County, CO County Commissioner district lines<br/>"
-        f"<b>/api/v1.0/district-lines/alpha</b>          Returns geojson data for the alpha proposed County Commissioner district lines<br/>"
-        f"<b>/api/v1.0/ditrict-lines/bravo</b>           Returns geojson data for the bravo proposed County Commissioner district line<br/>"
-    )
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # Return geojson for the county precinct lines
 @app.route("/api/v1.0/district-lines/precincts")
+@cross_origin()
 def precinct_lines():
     return precincts
 
 # Return geojson for the current county commissioner district lines
 @app.route("/api/v1.0/district-lines/cc")
+@cross_origin()
 def current_district_lines():
     return cc_districts
 
 # Return geojson for the alpha county commissioner district lines
 @app.route("/api/v1.0/district-lines/alpha")
+@cross_origin()
 def alpha_district_lines():
     return alpha
 
 # Return geojson for the bravo county commissioner district lines
 @app.route("/api/v1.0/district-lines/bravo")
+@cross_origin()
 def bravo_district_lines():
     return bravo
 
@@ -121,11 +118,13 @@ def current_district_info():
 
 # Return json for the alpha county commissioner district census and election info
 @app.route("/api/v1.0/district-info/alpha")
+@cross_origin()
 def alpha_district_info():
     return alpha_map_info
 
 # Return json for the bravo county commissioner district census and election info
 @app.route("/api/v1.0/district-info/bravo")
+@cross_origin()
 def bravo_district_info():
     return bravo_map_info
 
